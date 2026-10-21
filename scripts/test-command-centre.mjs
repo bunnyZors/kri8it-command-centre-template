@@ -1,0 +1,76 @@
+// Local-only contract checks. Never aim synthetic tests at the production Site.
+import assert from "node:assert/strict";
+const origin = "http://localhost:5173";
+const headers = { "Content-Type": "application/json", Cookie: "__sites_local_auth=1" };
+async function request(path, method = "GET", data, status = 200) {
+  const response = await fetch(origin + path, { method, headers, ...(data ? { body: JSON.stringify(data) } : {}) });
+  const text = await response.text();
+  const body = text ? JSON.parse(text) : {};
+  assert.equal(response.status, method === "DELETE" ? 204 : status, JSON.stringify(body));
+  return body;
+}
+const run = crypto.randomUUID();
+const now = Date.now();
+const evidence = id => ({ type: "meeting", id, label: "Synthetic local test", excerpt: "The owner explicitly committed to this test action." });
+const candidate = { commitmentKey: `test:${run}`, title: "Verify local commitment", extra: { confidence: "confirmed", sources: [evidence("m1")] } };
+const base = { date: "2026-10-14", timezone: "Europe/Dublin", calendarId: "primary", highlights: [],
+  events: [{ id: "local-test", title: "Test agenda", start: "2026-10-14T10:00:00+01:00", end: "2026-10-14T10:30:00+01:00", busy: true, allDay: false }],
+  sources: { email: { status: "success", checkedAt: now, through: now - 1000, note: "Local test" }, calendar: { status: "success", checkedAt: now, note: "Local test", windowStart:"2026-10-14T00:00:00+01:00", windowEnd:"2026-10-22T00:00:00+01:00" } }, tasks: [candidate] };
+const record = data => request("/api/command-centre", "POST", data);
+const board = () => request("/api/command-centre");
+const task = async key => (await board()).tasks.find(t => t.commitmentKey === key);
+const patch = (id, data) => request(`/api/tasks/${id}`, "PATCH", data);
+assert.equal((await record(base)).createdCount, 1);
+assert.equal((await record(base)).createdCount, 0);
+let current = await task(candidate.commitmentKey);
+assert.equal(current.status, "inbox");
+await patch(current.id, { priority: "high", priorityReason: "One-off deadline, not a standing client ranking", extra: { project: "Local test" } });
+const feedback = (await board()).planning.priorityFeedback.find(f => f.taskId === current.id);
+assert.equal(feedback.fromPriority, "medium"); assert.equal(feedback.toPriority, "high");
+assert.equal(feedback.project, "Local test"); assert.match(feedback.reason, /One-off/);
+assert.equal((await board()).planning.policy.calendarApprovalRequired, true);
+assert.match((await board()).planning.playbook, /Gemini transcript/);
+await patch(current.id, { title: "My manual title", status: "done", extra: { durationMinutes: 25 } });
+assert.equal((await record({ ...base, tasks: [{ ...candidate, title: "Automated title", extra: { ...candidate.extra, sources: [evidence("m2")] } }] })).createdCount, 0);
+current = await task(candidate.commitmentKey);
+assert.equal(current.status, "done"); assert.equal(current.title, "My manual title");
+assert.equal(current.priority, "high");
+assert.equal(current.extra.durationMinutes, 25); assert.equal(current.extra.sources.length, 2);
+const review = { ...candidate, commitmentKey: `review:${run}`, state: "review", extra: { confidence: "needs_confirmation", reviewReason: "Anonymous speaker; ownership unclear", sources: [evidence("m3")] } };
+await record({ ...base, tasks: [review] });
+const pending = await task(review.commitmentKey); assert.equal(pending.status, "review");
+await patch(pending.id, { status: "dismissed" });
+await record({ ...base, tasks: [review] });
+assert.equal((await task(review.commitmentKey)).status, "dismissed");
+const accept = { ...review, commitmentKey: `accept:${run}` };
+await record({ ...base, tasks: [accept] });
+const accepted = await task(accept.commitmentKey);
+await patch(accepted.id, { status: "inbox", extra: { confidence: "confirmed", reviewReason: "" } });
+await record({ ...base, tasks: [accept] });
+assert.equal((await task(accept.commitmentKey)).extra.confidence, "confirmed");
+await request("/api/command-centre", "POST", { ...base, tasks: [{ ...review, state: "inbox" }] }, 400);
+await request("/api/command-centre", "POST", { ...base, calendarId: "secondary" }, 400);
+await request("/api/command-centre", "POST", { ...base, events: [{ ...base.events[0], start: "bad-date" }] }, 400);
+const before = (await board()).command;
+await request("/api/command-centre", "POST", { ...base, tasks: [{ ...candidate, existingTaskId: crypto.randomUUID() }] }, 409);
+assert.equal((await board()).command.updatedAt, before.updatedAt);
+await record({ ...base, events: [], tasks: [], sources: { email: { status: "error", checkedAt: now, through: now, note: "Failed test source" }, calendar: { status: "unavailable", checkedAt: now, note: "Not connected" } } });
+const failed = (await board()).command;
+assert.equal(failed.sources.email.through, now - 1000); assert.equal(failed.events.length, 1);
+await record({ ...base, tasks: [], events: [{ ...base.events[0], start: "2026-10-14T00:00:00", end: "2026-10-15T00:00:00", allDay: false, busy: false }] });
+assert.equal((await board()).command.events[0].allDay, true);
+await record({ ...base, tasks: [], sources: { calendar: { ...base.sources.calendar, windowStart: "2026-10-14T00:00:00+01:00", windowEnd: "2026-10-22T00:00:00+01:00" } } });
+assert.equal((await board()).command.sources.calendar.windowEnd, "2026-10-22T00:00:00+01:00");
+await request("/api/command-centre", "POST", { ...base, tasks: [], sources: { calendar: { status:"success",checkedAt:now,note:"Missing required coverage" } } }, 400);
+await request("/api/command-centre", "POST", { ...base, tasks: [], sources: { calendar: { ...base.sources.calendar, windowEnd:undefined } } }, 400);
+const malformed = await fetch(origin + "/api/command-centre", { method:"POST",headers,body:'{"date":' });
+assert.equal(malformed.status,400); assert.match((await malformed.json()).error,/truncated JSON/);
+const rpc = await request("/mcp", "POST", {jsonrpc:"2.0",id:1,method:"tools/call",params:{name:"record_command_update_json",arguments:{payload:JSON.stringify({...base,tasks:[]})}}});
+assert.equal(rpc.result.isError,undefined); assert.ok(JSON.parse(rpc.result.content[0].text).updatedAt);
+assert.equal((await board()).command.sources.calendar.windowEnd,"2026-10-22T00:00:00+01:00");
+const manual = await request("/api/tasks", "POST", { title: "Manual local test", status: "waiting" }, 201);
+await patch(manual.task.id, { status: "in_progress" });
+await request(`/api/tasks/${manual.task.id}`, "DELETE");
+// Remove only this run's synthetic tasks. The local briefing remains a useful QA fixture.
+for (const key of [candidate.commitmentKey, review.commitmentKey, accept.commitmentKey]) await request(`/api/tasks/${(await task(key)).id}`, "DELETE");
+console.log("PASS: idempotency, evidence merge, manual edits/completion, confirmation/dismissal, validation, source failure/cursor retention, local CRUD");

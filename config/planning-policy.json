@@ -1,0 +1,19 @@
+{
+  "revision": "template-1.0.0",
+  "timezone": "Europe/Dublin",
+  "workingDays": [1, 2, 3, 4, 5],
+  "startHour": 9,
+  "endHour": 17,
+  "meetingBufferMinutes": 10,
+  "breakMinutes": 5,
+  "defaultDurationMinutes": 30,
+  "maxBlockMinutes": 90,
+  "maxSuggestions": 3,
+  "calendarApprovalRequired": true,
+  "sourcePreference": ["Wispr transcript", "calendar-linked transcript", "Wispr notes", "calendar-linked notes"],
+  "clientRules": [],
+  "documentedClientContext": [],
+  "priorityDiscovery": "No client rankings are preloaded. Ask one focused question only when a real prioritisation choice needs it.",
+  "priorityPrinciples": ["Explicit user corrections and pins take precedence.", "Surface imminent deadlines, security/access risk and revenue-blocking commitments.", "Do not invent client importance or promote one task correction to a standing rule.", "Retain provenance, scope, date and confidence for confirmed rules."],
+  "documentation": "docs/PRIORITISATION.md"
+}

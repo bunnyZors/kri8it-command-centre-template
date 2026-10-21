@@ -1,0 +1,11 @@
+{
+  "ownerName": "Your name",
+  "appName": "My Command Centre",
+  "timezone": "Europe/Dublin",
+  "calendarId": "primary",
+  "siteOrigin": null,
+  "workingHours": { "days": [1, 2, 3, 4, 5], "startHour": 9, "endHour": 17 },
+  "schedule": { "enabled": true, "days": [1, 2, 3, 4, 5], "times": ["08:00"] },
+  "sources": { "email": "Gmail - verify selected account", "meetings": "Wispr - verify connected owner", "calendar": "Google Calendar - verify selected account and calendar" },
+  "scan": { "maxLookbackHours": 96, "initialLookbackHours": 24, "meetingLookbackDays": 7, "calendarLookaheadDays": 7 }
+}

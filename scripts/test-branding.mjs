@@ -1,0 +1,15 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const read = path => readFileSync(new URL(path, import.meta.url), "utf8");
+const css = read("../app/globals.css");
+assert.match(css, /--primary: #00e5e3;/);
+assert.match(css, /--ring: #00e5e3;/);
+assert.match(css, /--font-sans: "Inter"/);
+assert.match(css, /font-weight: 100 900/);
+assert.match(css, /font-display: swap/);
+assert.doesNotMatch(css, /d8ff63|216,255,99/i);
+assert.match(read("../components/board.tsx"), /src="\/brand\/kri8it-logomark.png" alt="Kri8it"/);
+assert.match(read("../app/layout.tsx"), /\/fonts\/InterVariable.woff2/);
+assert.equal(readFileSync(new URL("../public/fonts/InterVariable.woff2", import.meta.url)).subarray(0,4).toString(), "wOF2");
+assert.match(read("../public/fonts/Inter-LICENSE.txt"), /SIL OPEN FONT LICENSE/);
+console.log("PASS: Kri8it turquoise, supplied logo, self-hosted variable Inter and font license");

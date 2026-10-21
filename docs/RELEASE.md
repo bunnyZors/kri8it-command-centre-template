@@ -1,0 +1,9 @@
+# Template 1.0.0
+
+Prepared for one colleague's controlled pilot. This release packages the complete current command-centre application with neutral owner configuration and fresh-instance installation instructions, not an existing connected Site.
+
+Verified locally: clean-source/identity-pattern audit, template defaults, isolated configuration flow (alternate timezone/calendar, two daily times, weekly and manual-only validation), branding, work planner, TypeScript, production build and isolated D1 API contracts. Local API contracts cover idempotency, evidence merging, manual edit/completion preservation, confirmation/dismissal, input validation, source failure/cursor retention and CRUD. No colleague's connectors, hosted deployment or natural scheduled run has been verified by this release.
+
+Retained: UI/backend, responsive status tabs/editor, Inter/turquoise/logo, migrations, MCP/WebMCP, atomic updater and safety rules. Added: configuration validation, exact-origin fallback, dynamic badge/playbook/timezone/calendar metadata, generic prioritisation, scheduling proposal generator and detailed setup/security/pilot docs. Removed: original owner identity, original Site/automation routing, client rules/context, original history, runtime data and workstation paths. Original live installation is not a target of any template setup/test.
+
+Known v1 limits: one person per owner-private Site; hosting access is the backend security boundary; no distributed run lease; whole-hour same-day work windows; one weekly recurrence with same-minute daily times; conservative bounded scan and payload limits. Provider adapters other than the documented verified paths require testing. Scheduler/model/connector entitlements differ by account. See SECURITY.md, SCHEDULING.md and TESTING.md before deployment.

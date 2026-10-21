@@ -1,0 +1,23 @@
+{
+  "templateVersion": "1.0.0",
+  "ownerIdentityVerified": false,
+  "sourceAccountsVerified": { "email": false, "meetings": false, "calendar": false },
+  "siteProjectId": null,
+  "siteOrigin": null,
+  "ownerPrivateVerified": false,
+  "emptyDatabaseVerified": false,
+  "deploymentId": null,
+  "deploymentSucceeded": false,
+  "hostedReadWriteVerified": false,
+  "anonymousRejected": false,
+  "sourcesCalendarBoundsVerified": false,
+  "automationId": null,
+  "scheduleRequested": false,
+  "scheduleEnabledVerified": false,
+  "actualSchedule": null,
+  "timezone": null,
+  "manualRunVerifiedAt": null,
+  "naturalRunVerifiedAt": null,
+  "modelRouting": "unverified",
+  "limitations": []
+}

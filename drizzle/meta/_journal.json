@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1789638975935,
+      "tag": "0000_dapper_network",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1791992678675,
+      "tag": "0001_cynical_mantis",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791997861048,
+      "tag": "0002_bent_shiver_man",
+      "breakpoints": true
+    }
+  ]
+}
